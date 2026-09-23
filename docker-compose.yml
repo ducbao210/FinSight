@@ -1,0 +1,54 @@
+services:
+  index-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    command: >-
+      sh -c '
+        if python scripts/check_index.py; then
+          echo "Existing indexes are valid; skipping dataset download and ingestion.";
+        else
+          echo "Indexes are missing or invalid; downloading dataset and rebuilding indexes.";
+          python scripts/download_dataset.py &&
+          python scripts/ingest.py --force;
+        fi
+      '
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env
+    depends_on:
+      index-init:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      API_URL: http://backend:8000
+    ports:
+      - "8501:8501"
