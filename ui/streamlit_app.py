@@ -123,6 +123,13 @@ if submitted and question.strip():
         st.error(":material/error: Failed to generate an answer")
 
     st.markdown("### :material/answer: Answer")
+    model_name = data.get("model_name")
+    if model_name:
+        st.info(
+            f"You're using **{model_name}** for this section. "
+            "If you want to change it, please modify `MODEL_NAME` in `.env` "
+            "or the default in `src/core/configs.py`."
+        )
     st.markdown(data.get("answer", "No answer returned"))
 
     calculations = data.get("calculations", [])

@@ -132,6 +132,7 @@ class CRAGPipeline:
                 )
             return QueryResponse(
                 answer=message,
+                model_name=self._model_name,
                 status="error",
                 citations=[],
                 calculations=[],
@@ -157,6 +158,7 @@ class CRAGPipeline:
             )
         return QueryResponse(
             answer=result.get("draft_answer", "No answer generated"),
+            model_name=self._model_name,
             status=result.get("final_status", "error"),
             retrieved_chunks=[
                 RetrievedChunk(chunk=Chunk.model_validate(item), score=0.0, source="hybrid")

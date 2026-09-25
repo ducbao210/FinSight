@@ -138,6 +138,7 @@ class QueryResponse(BaseModel):
     """Response from the /query endpoint."""
 
     answer: str
+    model_name: str = ""
     status: Literal["answer", "abstain", "error"] = "answer"
     # Keep the exact retrieval output available to evaluators. The evaluation
     # runner uses this to score chunks produced during answering without a
